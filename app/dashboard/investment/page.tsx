@@ -263,7 +263,7 @@ export default function InvestmentPage() {
       {/* ADD BUTTON */}
       <div className="flex justify-between items-center mt-6">
         <h2 className="text-xl font-semibold">Investment History</h2>
-        <Button onClick={() => setIsOpen(true)} className="rounded-xl shadow-md bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setIsOpen(true)} className="rounded-xl shadow-md bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Add Investment</span><span className="sm:hidden">Add</span>
         </Button>
       </div>
@@ -327,7 +327,7 @@ export default function InvestmentPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Save Investment</Button>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">Save Investment</Button>
           </form>
         </DialogContent>
       </Dialog>

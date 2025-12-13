@@ -69,7 +69,7 @@ export function RecentTransactions({ userId }: { userId: string }) {
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>
-                    {transaction.type === "income" ? "+" : "-"}${Math.abs(transaction.amount).toFixed(2)}
+                    {transaction.type === "income" ? "+" : "-"} ₹{Math.abs(transaction.amount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   <p className="text-xs text-slate-500">{new Date(transaction.date).toLocaleDateString()}</p>
                 </div>

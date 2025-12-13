@@ -85,7 +85,7 @@ export function DashboardStats({ userId }: { userId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-green-600">
-              Rs. {stats.totalIncome.toFixed(2)}
+              ₹ {stats.totalIncome.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
@@ -98,7 +98,7 @@ export function DashboardStats({ userId }: { userId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-red-600">
-              Rs. {stats.totalExpense.toFixed(2)}
+              ₹ {stats.totalExpense.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export function DashboardStats({ userId }: { userId: string }) {
           </CardHeader>
           <CardContent>
             <div className={`text-xl sm:text-2xl font-bold ${stats.balance >= 0 ? "text-blue-600" : "text-red-600"}`}>
-              Rs. {stats.balance.toFixed(2)}
+              ₹ {stats.balance.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
@@ -153,7 +153,7 @@ export function DashboardStats({ userId }: { userId: string }) {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `Rs. ${value.toFixed(2)}`} />
+                    <Tooltip formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
                   </PieChart>
                 </ResponsiveContainer>
 
@@ -162,7 +162,7 @@ export function DashboardStats({ userId }: { userId: string }) {
                   {stats.categoryData.map((item, index) => (
                     <div key={`detail-${index}`} className="flex justify-between">
                       <span>{item.name}</span>
-                      <span className="font-semibold">Rs. {item.value.toFixed(2)}</span>
+                      <span className="font-semibold">₹ {item.value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   ))}
                 </div>
@@ -195,6 +195,7 @@ export function DashboardStats({ userId }: { userId: string }) {
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
                   }}
                   cursor={false}
+                  formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN")}`}
                 />
                 <Legend />
                 <Bar dataKey="income" fill="#10b981" />

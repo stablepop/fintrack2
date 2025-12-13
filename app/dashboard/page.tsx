@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -7,16 +6,21 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
 
   return (
-    <div className="flex-1 space-y-4 lg:space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
-          Welcome back! Here&apos;s your financial overview.
+    <div className="flex-1 space-y-6 p-4 sm:p-6 pb-20">
+      {/* Header with Gradient */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-2xl shadow-lg text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
+        <p className="text-sm mt-1 opacity-90">
+          Welcome back, {user?.fullName?.split(" ")[0] || "User"}! Here's your financial overview.
         </p>
       </div>
 
+      {/* Stats Components */}
       <DashboardStats userId={user?.userId || ""} />
-      <RecentTransactions userId={user?.userId || ""} />
+      
+      <div className="mt-6">
+        <RecentTransactions userId={user?.userId || ""} />
+      </div>
     </div>
   );
 }

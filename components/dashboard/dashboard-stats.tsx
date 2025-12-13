@@ -122,53 +122,54 @@ export function DashboardStats({ userId }: { userId: string }) {
           <CardHeader className="pb-3 sm:pb-4">
             <CardTitle className="text-sm sm:text-base">Expense Breakdown</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-6">
             {stats.categoryData.length > 0 ? (
-              <>
-                <div className="flex flex-wrap gap-2 justify-center mb-4">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="w-full sm:w-1/2 h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none" // Removes border around pie slices
+                      >
+                        {stats.categoryData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN")}`}
+                        contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                        itemStyle={{ color: '#fff' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="w-full sm:w-1/2 space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                   {stats.categoryData.map((item, index) => (
-                    <div key={`legend-${index}`} className="flex items-center gap-1 text-xs sm:text-sm">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                      ></div>
-                      <span className="truncate">{item.name}</span>
+                    <div key={index} className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <span className="text-slate-600 dark:text-slate-300 truncate max-w-[100px]">{item.name}</span>
+                      </div>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        ₹ {item.value.toLocaleString("en-IN")}
+                      </span>
                     </div>
                   ))}
                 </div>
-
-                {/* Pie chart without labels to prevent overflow */}
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={stats.categoryData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={50}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={false}
-                    >
-                      {stats.categoryData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
-                  </PieChart>
-                </ResponsiveContainer>
-
-                {/* Category details list */}
-                <div className="mt-4 space-y-1 text-xs sm:text-sm">
-                  {stats.categoryData.map((item, index) => (
-                    <div key={`detail-${index}`} className="flex justify-between">
-                      <span>{item.name}</span>
-                      <span className="font-semibold">₹ {item.value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
+              </div>
             ) : (
-              <div className="text-center py-8 text-slate-500 text-sm">No data available</div>
+              <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+                <PieChart className="w-10 h-10 mb-2 opacity-20" />
+                <p>No expense data available</p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -177,31 +178,39 @@ export function DashboardStats({ userId }: { userId: string }) {
           <CardHeader className="pb-3 sm:pb-4">
             <CardTitle className="text-sm sm:text-base">Monthly Summary</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart
-                data={[
-                  { month: "This Month", income: stats.totalIncome, expense: stats.totalExpense },
-                ]}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "6px",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
-                  }}
-                  cursor={false}
-                  formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN")}`}
-                />
-                <Legend />
-                <Bar dataKey="income" fill="#10b981" />
-                <Bar dataKey="expense" fill="#ef4444" />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-6">
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { name: "Income", value: stats.totalIncome, fill: "#10b981" }, // Emerald Green
+                    { name: "Expense", value: stats.totalExpense, fill: "#ef4444" } // Bright Red
+                  ]}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  barSize={30}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    type="category" 
+                    dataKey="name" 
+                    tick={{ fontSize: 12, fill: '#94a3b8' }} 
+                    width={60} 
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                    itemStyle={{ color: '#fff' }}
+                    formatter={(value) => [`₹ ${Number(value).toLocaleString("en-IN")}`, 'Amount']}
+                  />
+                  {/* Corrected: Changed background fill to dark gray (#334155) so it doesn't look white in dark mode */}
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} background={{ fill: '#334155', radius: 4 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>

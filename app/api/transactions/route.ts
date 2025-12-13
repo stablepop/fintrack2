@@ -12,9 +12,19 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const transactions = await Transaction.find({ userId: currentUser.userId })
-      .sort({ date: -1 })
-      .lean();
+    // Parse the limit from the query parameters
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit');
+
+    let query = Transaction.find({ userId: currentUser.userId })
+      .sort({ date: -1 });
+    
+    // Apply limit if provided
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const transactions = await query.lean();
 
     return NextResponse.json(transactions);
   } catch (error) {

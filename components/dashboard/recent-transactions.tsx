@@ -22,8 +22,10 @@ export function RecentTransactions({ userId }: { userId: string }) {
       try {
         const response = await fetch('/api/transactions?limit=5');
         const data = await response.json();
-        if (data.transactions) {
-          setTransactions(data.transactions);
+        
+        // Fix: The API returns an array directly, not an object with a 'transactions' key
+        if (Array.isArray(data)) {
+          setTransactions(data);
         }
       } catch (error) {
         console.error('Failed to fetch transactions:', error);

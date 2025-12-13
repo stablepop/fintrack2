@@ -15,16 +15,30 @@ interface UserProfile {
 }
 
 export default function SettingsPage() {
+  // Profile State
   const [profile, setProfile] = useState<UserProfile>({
     fullName: "",
     email: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  // Password State
+  const [passwords, setPasswords] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Account Deletion State
+  const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -83,6 +97,47 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+
+    if (passwords.newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setPasswordSaving(true);
+    setPasswordError("");
+    setPasswordMessage("");
+
+    try {
+      const response = await fetch('/api/user/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwords.currentPassword,
+          newPassword: passwords.newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update password');
+      }
+
+      setPasswordMessage("Password changed successfully!");
+      setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setTimeout(() => setPasswordMessage(""), 3000);
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     setDeleting(true);
     setError("");
@@ -111,7 +166,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 lg:space-y-6 p-4 sm:p-6">
+    <div className="flex-1 space-y-4 lg:space-y-6 p-4 sm:p-6 pb-20">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
@@ -133,7 +188,7 @@ export default function SettingsPage() {
               </Alert>
             )}
             {message && (
-              <Alert>
+              <Alert className="bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
                 <AlertDescription className="text-xs sm:text-sm">{message}</AlertDescription>
               </Alert>
             )}
@@ -167,19 +222,64 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Security Settings */}
+        {/* Security Settings (Password Reset) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base sm:text-lg">Security</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Manage your account security</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Change your password</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3">
-                Password is required to protect your financial data.
-              </p>
-              <p className="text-xs text-slate-500">Password management coming soon ... </p>
+            {passwordError && (
+              <Alert variant="destructive">
+                <AlertDescription className="text-xs sm:text-sm">{passwordError}</AlertDescription>
+              </Alert>
+            )}
+            {passwordMessage && (
+              <Alert className="bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
+                <AlertDescription className="text-xs sm:text-sm">{passwordMessage}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={passwords.currentPassword}
+                onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
+                placeholder="••••••"
+              />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwords.newPassword}
+                onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                placeholder="••••••"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwords.confirmPassword}
+                onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                placeholder="••••••"
+              />
+            </div>
+
+            <Button 
+              onClick={handleChangePassword} 
+              disabled={passwordSaving || !passwords.currentPassword || !passwords.newPassword} 
+              className="w-full sm:w-auto"
+            >
+              {passwordSaving ? "Updating..." : "Change Password"}
+            </Button>
           </CardContent>
         </Card>
 

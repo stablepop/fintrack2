@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     await Otp.deleteOne({ _id: validOtp._id });
 
     // 6. Login User
-    const token = generateToken(user._id.toString(), user.email, user.role);
+    const token = generateToken(user._id.toString(), user.email, user.role, user.fullName);
     await setAuthToken(token);
 
     return NextResponse.json(

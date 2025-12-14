@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { TrendingUp, Wallet, ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 interface Stats {
   totalIncome: number;
   totalExpense: number;
   balance: number;
-  categoryData: Array<{ name: string; value: number }>;
+  totalInvestments: number;
+  chartData: Array<{ name: string; value: number; fill: string }>;
 }
 
 export function DashboardStats({ userId }: { userId: string }) {
@@ -16,21 +18,27 @@ export function DashboardStats({ userId }: { userId: string }) {
     totalIncome: 0,
     totalExpense: 0,
     balance: 0,
-    categoryData: [],
+    totalInvestments: 0,
+    chartData: [],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/transactions');
+        const [transactionsRes, investmentsRes] = await Promise.all([
+          fetch('/api/transactions'),
+          fetch('/api/investments')
+        ]);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch transactions');
+        if (!transactionsRes.ok || !investmentsRes.ok) {
+          throw new Error('Failed to fetch data');
         }
 
-        const transactions = await response.json();
+        const transactions = await transactionsRes.json();
+        const investments = await investmentsRes.json();
 
+        // 1. Transaction Calculations
         const totalIncome = transactions
           .filter((t: any) => t.type === "income")
           .reduce((sum: number, t: any) => sum + t.amount, 0);
@@ -39,22 +47,36 @@ export function DashboardStats({ userId }: { userId: string }) {
           .filter((t: any) => t.type === "expense")
           .reduce((sum: number, t: any) => sum + t.amount, 0);
 
-        // Group by category
-        const categoryMap: Record<string, number> = {};
-        transactions.forEach((t: any) => {
-          categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
-        });
+        // 2. Investment Calculations
+        const monthDiff = (start: Date, end: Date) => {
+          return (
+            end.getFullYear() * 12 +
+            end.getMonth() -
+            (start.getFullYear() * 12 + start.getMonth())
+          ) + 1;
+        };
 
-        const categoryData = Object.entries(categoryMap).map(([name, value]) => ({
-          name,
-          value,
-        }));
+        const totalInvestments = investments.reduce((sum: number, i: any) => {
+          if (i.type === "recurring") {
+            const months = monthDiff(new Date(i.date), new Date());
+            return sum + (i.amount * (months > 0 ? months : 1));
+          }
+          return sum + i.amount;
+        }, 0);
+
+        // 3. Prepare Simplified Chart Data (Income, Expense, Investment ONLY)
+        const chartData = [
+          { name: "Income", value: totalIncome, fill: "#10b981" },     // Emerald
+          { name: "Expense", value: totalExpense, fill: "#ef4444" },   // Red
+          { name: "Investment", value: totalInvestments, fill: "#3b82f6" } // Blue
+        ].filter(item => item.value > 0); // Optional: Hide zero values if preferred
 
         setStats({
           totalIncome,
           totalExpense,
           balance: totalIncome - totalExpense,
-          categoryData,
+          totalInvestments,
+          chartData,
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -64,11 +86,9 @@ export function DashboardStats({ userId }: { userId: string }) {
     };
 
     if (userId) {
-      fetchStats();
+      fetchData();
     }
   }, [userId]);
-
-  const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"];
 
   if (loading) {
     return <div className="p-4 text-sm sm:text-base">Loading stats...</div>;
@@ -76,89 +96,109 @@ export function DashboardStats({ userId }: { userId: string }) {
 
   return (
     <div className="grid gap-4 lg:gap-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Top Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Total Income
             </CardTitle>
+            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-green-600">
-              ₹ {stats.totalIncome.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              ₹ {stats.totalIncome.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Total Expenses
             </CardTitle>
+            <ArrowDownRight className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-red-600">
-              ₹ {stats.totalExpense.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              ₹ {stats.totalExpense.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="sm:col-span-2 lg:col-span-1">
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
-              Balance
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              Investments
             </CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className={`text-xl sm:text-2xl font-bold ${stats.balance >= 0 ? "text-blue-600" : "text-red-600"}`}>
-              ₹ {stats.balance.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              ₹ {stats.totalInvestments.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              Current Balance
+            </CardTitle>
+            <Wallet className="h-4 w-4 text-slate-500" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${stats.balance >= 0 ? "text-slate-900 dark:text-white" : "text-red-600"}`}>
+              ₹ {stats.balance.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-        <Card>
-          <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="text-sm sm:text-base">Expense Breakdown</CardTitle>
+        {/* Breakdown Chart */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Financial Distribution</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            {stats.categoryData.length > 0 ? (
+          <CardContent>
+            {stats.chartData.length > 0 ? (
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="w-full sm:w-1/2 h-[200px]">
+                <div className="w-full sm:w-1/2 h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={stats.categoryData}
+                        data={stats.chartData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
                         outerRadius={80}
                         paddingAngle={5}
                         dataKey="value"
-                        stroke="none" // Removes border around pie slices
+                        stroke="none"
                       >
-                        {stats.categoryData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {stats.chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                       </Pie>
                       <Tooltip 
                         formatter={(value) => `₹ ${Number(value).toLocaleString("en-IN")}`}
-                        contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                        contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: 'rgba(15, 23, 42, 0.9)', color: '#fff' }}
                         itemStyle={{ color: '#fff' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
                 
-                <div className="w-full sm:w-1/2 space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                  {stats.categoryData.map((item, index) => (
+                <div className="w-full sm:w-1/2 space-y-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                  {stats.chartData.map((item, index) => (
                     <div key={index} className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                        <span className="text-slate-600 dark:text-slate-300 truncate max-w-[100px]">{item.name}</span>
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.fill }}></div>
+                        <span className="text-slate-600 dark:text-slate-300 truncate">{item.name}</span>
                       </div>
-                      <span className="font-semibold text-slate-900 dark:text-white">
+                      <span className="font-medium text-slate-900 dark:text-white">
                         ₹ {item.value.toLocaleString("en-IN")}
                       </span>
                     </div>
@@ -166,48 +206,51 @@ export function DashboardStats({ userId }: { userId: string }) {
                 </div>
               </div>
             ) : (
-              <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+              <div className="h-[220px] flex flex-col items-center justify-center text-slate-400">
                 <PieChart className="w-10 h-10 mb-2 opacity-20" />
-                <p>No expense data available</p>
+                <p>No data available</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="text-sm sm:text-base">Monthly Summary</CardTitle>
+        {/* Overview Chart */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Monthly Summary</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="h-[200px] w-full">
+          <CardContent>
+            <div className="h-[220px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={[
-                    { name: "Income", value: stats.totalIncome, fill: "#10b981" }, // Emerald Green
-                    { name: "Expense", value: stats.totalExpense, fill: "#ef4444" } // Bright Red
-                  ]}
+                  data={stats.chartData} // Using the same simplified data
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  barSize={30}
+                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                  barSize={32}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
                   <XAxis type="number" hide />
                   <YAxis 
                     type="category" 
                     dataKey="name" 
-                    tick={{ fontSize: 12, fill: '#94a3b8' }} 
-                    width={60} 
+                    tick={{ fontSize: 13, fill: '#64748b' }} 
+                    width={80} 
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip 
                     cursor={{ fill: 'transparent' }}
-                    contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: 'rgba(15, 23, 42, 0.9)', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
                     formatter={(value) => [`₹ ${Number(value).toLocaleString("en-IN")}`, 'Amount']}
                   />
-                  {/* Corrected: Changed background fill to dark gray (#334155) so it doesn't look white in dark mode */}
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} background={{ fill: '#334155', radius: 4 }} />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} background={{ fill: 'var(--muted)', radius: 4 }} >
+                     {
+                      stats.chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))
+                    }
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>

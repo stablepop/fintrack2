@@ -233,6 +233,9 @@ export default function TransactionPage() {
             <h1 className="text-2xl sm:text-3xl font-bold">Transactions</h1>
             <p className="text-sm mt-1 opacity-90">Manage your income and expenses</p>
           </div>
+          {/* Pro Upgrade Button */}
+          {/* Triggers the Razorpay payment process for upgrading to FinTrack Pro */}
+          {/* Uses the handleProUpgrade function from useProUpgrade hook */}
           <Button
             onClick={handleProUpgrade}
             disabled={paymentLoading}

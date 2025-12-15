@@ -44,6 +44,9 @@ export default function DashboardPage() {
               Welcome back, {user?.fullName?.split(" ")[0] || "User"}! Here's your financial overview.
             </p>
           </div>
+          {/* Pro Upgrade Button */}
+          {/* Triggers the Razorpay payment process for upgrading to FinTrack Pro */}
+          {/* Uses the handleProUpgrade function from useProUpgrade hook */}
           <Button
             onClick={handleProUpgrade}
             disabled={paymentLoading}

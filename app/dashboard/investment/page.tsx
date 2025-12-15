@@ -282,6 +282,9 @@ export default function InvestmentPage() {
             <h1 className="text-2xl sm:text-3xl font-bold">Investments</h1>
             <p className="text-sm mt-1 opacity-90">Track and visualise your portfolio</p>
           </div>
+          {/* Pro Upgrade Button */}
+          {/* Triggers the Razorpay payment process for upgrading to FinTrack Pro */}
+          {/* Uses the handleProUpgrade function from useProUpgrade hook */}
           <Button
             onClick={handleProUpgrade}
             disabled={paymentLoading}

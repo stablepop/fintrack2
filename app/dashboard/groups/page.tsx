@@ -95,6 +95,9 @@ export default function GroupsPage() {
                 <p className="text-sm mt-1 opacity-90">Split bills and track shared expenses</p>
              </div>
              <div className="flex items-center gap-2">
+               {/* Pro Upgrade Button */}
+               {/* Triggers the Razorpay payment process for upgrading to FinTrack Pro */}
+               {/* Uses the handleProUpgrade function from useProUpgrade hook */}
                <Button
                  onClick={handleProUpgrade}
                  disabled={paymentLoading}

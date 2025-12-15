@@ -1,13 +1,25 @@
+"use client";
+
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { GoalsSection } from "@/components/dashboard/goals-section"; 
 import { getCurrentUser } from "@/lib/auth/session";
 import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
+import { useEffect, useState } from "react";
 
-export default async function DashboardPage() {
-  const user = await getCurrentUser();
+export default function DashboardPage() {
+  const [user, setUser] = useState<any>(null);
+  const { handleProUpgrade, paymentLoading } = useProUpgrade();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    fetchUser();
+  }, []);
 
   return (
     <div className="flex-1 space-y-8 p-4 sm:p-6 pb-20">
@@ -21,14 +33,19 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Button
-            asChild
+            onClick={handleProUpgrade}
+            disabled={paymentLoading}
             size="sm"
             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
           >
-            <Link href="/dashboard/settings">
-              <Crown className="h-4 w-4 mr-1" />
-              Go Pro
-            </Link>
+            {paymentLoading ? (
+              <>Processing...</>
+            ) : (
+              <>
+                <Crown className="h-4 w-4 mr-1" />
+                Go Pro
+              </>
+            )}
           </Button>
         </div>
       </div>

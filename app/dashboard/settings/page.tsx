@@ -32,6 +32,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
 
 
 import {
@@ -98,10 +99,10 @@ export default function SettingsPage() {
 
   // Pro subscription
   const [proDialogOpen, setProDialogOpen] = useState(false);
-  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
+  const { handleProUpgrade, paymentLoading } = useProUpgrade();
 
   /* ------------------------ effects ------------------------ */
 
@@ -326,71 +327,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Handle Pro subscription payment
-  const handleProPayment = async () => {
-    setPaymentLoading(true);
-    try {
-      // Amount for Pro subscription: ₹499 = 49900 paise
-      const amount = 49900;
-
-      // Create Razorpay order
-      const res = await fetch('/api/subscription/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, currency: 'INR' }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to create payment order');
-      }
-
-      const { orderId, key } = await res.json();
-
-      // Load Razorpay script if not loaded
-      if (!window.Razorpay) {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-        await new Promise((resolve) => {
-          script.onload = resolve;
-        });
-      }
-
-      // Initialize Razorpay checkout
-      const options = {
-        key: key,
-        amount: amount,
-        currency: 'INR',
-        name: 'FinTrack Pro',
-        description: 'Upgrade to Pro features',
-        order_id: orderId,
-        handler: function (response: any) {
-          // Payment successful
-          toast.success('Payment successful! Welcome to Pro.');
-          setProDialogOpen(false);
-          // Here you would typically update user's subscription status in DB
-          // For now, just show success
-        },
-        prefill: {
-          email: profile.email,
-          name: profile.fullName,
-        },
-        theme: {
-          color: '#059669', // emerald-600
-        },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
   if (loading) return <div className="p-6">Loading settings…</div>;
 
   /* ------------------------ UI ------------------------ */
@@ -556,7 +492,7 @@ export default function SettingsPage() {
                             <p className="text-sm text-slate-600 dark:text-slate-400">One-time payment</p>
                           </div>
                           <Button
-                            onClick={handleProPayment}
+                            onClick={handleProUpgrade}
                             disabled={paymentLoading}
                             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
                           >

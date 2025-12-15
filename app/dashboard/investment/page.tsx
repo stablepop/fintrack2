@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Calendar, TrendingUp, Wallet, SquarePen, Crown } from "lucide-react";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
 
 interface Investment {
   _id: string;
@@ -59,6 +60,7 @@ export default function InvestmentPage() {
   });
 
   const router = useRouter();
+  const { handleProUpgrade, paymentLoading } = useProUpgrade();
 
   useEffect(() => {
     fetchInvestments();
@@ -281,14 +283,19 @@ export default function InvestmentPage() {
             <p className="text-sm mt-1 opacity-90">Track and visualise your portfolio</p>
           </div>
           <Button
-            asChild
+            onClick={handleProUpgrade}
+            disabled={paymentLoading}
             size="sm"
             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
           >
-            <Link href="/dashboard/settings">
-              <Crown className="h-4 w-4 mr-1" />
-              Go Pro
-            </Link>
+            {paymentLoading ? (
+              <>Processing...</>
+            ) : (
+              <>
+                <Crown className="h-4 w-4 mr-1" />
+                Go Pro
+              </>
+            )}
           </Button>
         </div>
       </div>

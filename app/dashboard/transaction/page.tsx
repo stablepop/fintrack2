@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Calendar, TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, SquarePen, Crown } from 'lucide-react';
+import { useProUpgrade } from "@/hooks/useProUpgrade";
 
 interface Transaction {
   _id: string;
@@ -44,6 +45,7 @@ export default function TransactionPage() {
   });
 
   const router = useRouter();
+  const { handleProUpgrade, paymentLoading } = useProUpgrade();
 
   useEffect(() => {
     fetchTransactions();
@@ -232,14 +234,19 @@ export default function TransactionPage() {
             <p className="text-sm mt-1 opacity-90">Manage your income and expenses</p>
           </div>
           <Button
-            asChild
+            onClick={handleProUpgrade}
+            disabled={paymentLoading}
             size="sm"
             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
           >
-            <Link href="/dashboard/settings">
-              <Crown className="h-4 w-4 mr-1" />
-              Go Pro
-            </Link>
+            {paymentLoading ? (
+              <>Processing...</>
+            ) : (
+              <>
+                <Crown className="h-4 w-4 mr-1" />
+                Go Pro
+              </>
+            )}
           </Button>
         </div>
       </div>

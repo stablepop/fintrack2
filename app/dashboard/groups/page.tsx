@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Users, ArrowRight, Trash2, Crown } from "lucide-react";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
 import { toast } from "sonner";
 
 export default function GroupsPage() {
@@ -16,6 +17,7 @@ export default function GroupsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [inviteEmails, setInviteEmails] = useState("");
+  const { handleProUpgrade, paymentLoading } = useProUpgrade();
 
   useEffect(() => {
     fetchGroups();
@@ -94,14 +96,19 @@ export default function GroupsPage() {
              </div>
              <div className="flex items-center gap-2">
                <Button
-                 asChild
+                 onClick={handleProUpgrade}
+                 disabled={paymentLoading}
                  size="sm"
                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
                >
-                 <Link href="/dashboard/settings">
-                   <Crown className="h-4 w-4 mr-1" />
-                   Go Pro
-                 </Link>
+                 {paymentLoading ? (
+                   <>Processing...</>
+                 ) : (
+                   <>
+                     <Crown className="h-4 w-4 mr-1" />
+                     Go Pro
+                   </>
+                 )}
                </Button>
                <Dialog open={isOpen} onOpenChange={setIsOpen}>
                  <DialogTrigger asChild>

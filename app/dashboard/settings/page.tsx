@@ -511,62 +511,65 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Crown className="h-5 w-5 text-yellow-500" />
-                Pro Features
+                Subscription Management
               </CardTitle>
-              <CardDescription>Unlock advanced features</CardDescription>
+              <CardDescription>Manage your Pro subscription</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Upgrade to Pro for unlimited categories, advanced analytics, priority support, and more.
-              </p>
-              <Dialog open={proDialogOpen} onOpenChange={setProDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
-                    <Crown className="mr-2 h-4 w-4" />
-                    Go Pro
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-yellow-500" />
-                      Upgrade to FinTrack Pro
-                    </DialogTitle>
-                    <DialogDescription>
-                      Unlock powerful features to take your expense tracking to the next level.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Pro Features Include:</h4>
-                      <ul className="space-y-1 text-sm">
-                        <li>• Unlimited expense categories</li>
-                        <li>• Advanced analytics and reports</li>
-                        <li>• Priority customer support</li>
-                        <li>• Export data in multiple formats</li>
-                        <li>• Custom budget alerts</li>
-                        <li>• AI-powered insights</li>
-                      </ul>
-                    </div>
-                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-semibold text-lg">₹499</p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">One-time payment</p>
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border">
+                <div>
+                  <p className="font-semibold">Current Plan: Free</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Upgrade to unlock Pro features</p>
+                </div>
+                <Dialog open={proDialogOpen} onOpenChange={setProDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
+                      <Crown className="mr-2 h-4 w-4" />
+                      Upgrade to Pro
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-yellow-500" />
+                        Upgrade to FinTrack Pro
+                      </DialogTitle>
+                      <DialogDescription>
+                        Unlock powerful features to take your expense tracking to the next level.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">Pro Features Include:</h4>
+                        <ul className="space-y-1 text-sm">
+                          <li>• Unlimited expense categories</li>
+                          <li>• Advanced analytics and reports</li>
+                          <li>• Priority customer support</li>
+                          <li>• Export data in multiple formats</li>
+                          <li>• Custom budget alerts</li>
+                          <li>• AI-powered insights</li>
+                        </ul>
+                      </div>
+                      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-lg">₹499</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">One-time payment</p>
+                          </div>
+                          <Button
+                            onClick={handleProPayment}
+                            disabled={paymentLoading}
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+                          >
+                            {paymentLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {paymentLoading ? "Processing..." : "Upgrade Now"}
+                          </Button>
                         </div>
-                        <Button
-                          onClick={handleProPayment}
-                          disabled={paymentLoading}
-                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
-                        >
-                          {paymentLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          {paymentLoading ? "Processing..." : "Upgrade Now"}
-                        </Button>
                       </div>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -546,13 +546,15 @@ export default function SettingsPage() {
                         Delete account permanently?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-2">
-                        <p>
-                          This action <strong>cannot be undone</strong>.
-                        </p>
-                        <p>
-                          All your data, transactions, and biometric credentials will be
-                          permanently deleted.
-                        </p>
+                        <div>
+                          <p>
+                            This action <strong>cannot be undone</strong>.
+                          </p>
+                          <p>
+                            All your data, transactions, and biometric credentials will be
+                            permanently deleted.
+                          </p>
+                        </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
 

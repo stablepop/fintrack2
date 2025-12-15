@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Trash2, Calendar, CreditCard, RefreshCw, SquarePen, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Calendar, CreditCard, RefreshCw, SquarePen, AlertCircle, Crown } from "lucide-react";
 
 interface Subscription {
   _id: string;
@@ -205,9 +206,23 @@ export default function SubscriptionsPage() {
     <div className="flex-1 space-y-6 p-4 sm:p-6 pb-20">
       
       {/* HEADER */}
-      <div className="bg-linear-to-r from-violet-600 to-indigo-600 p-6 rounded-2xl shadow-lg text-white mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">Subscriptions</h1>
-        <p className="text-sm mt-1 opacity-90">Manage recurring payments and alerts</p>
+      <div className="bg-linear-to-r from-violet-600 to-indigo-600 p-6 rounded-2xl shadow-lg text-white mb-4 relative">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Subscriptions</h1>
+            <p className="text-sm mt-1 opacity-90">Manage recurring payments and alerts</p>
+          </div>
+          <Button
+            asChild
+            size="sm"
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
+          >
+            <Link href="/dashboard/settings">
+              <Crown className="h-4 w-4 mr-1" />
+              Go Pro
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* SUMMARY CARDS */}

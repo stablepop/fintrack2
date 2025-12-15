@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Users, ArrowRight, Trash2 } from "lucide-react";
+import { Plus, Users, ArrowRight, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 
 export default function GroupsPage() {
@@ -92,12 +93,23 @@ export default function GroupsPage() {
                 <h1 className="text-2xl sm:text-3xl font-bold">Shared Groups</h1>
                 <p className="text-sm mt-1 opacity-90">Split bills and track shared expenses</p>
              </div>
-             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-white text-pink-600 hover:bg-slate-100 border-none">
-                  <Plus className="h-4 w-4 mr-2" /> New Group
-                </Button>
-              </DialogTrigger>
+             <div className="flex items-center gap-2">
+               <Button
+                 asChild
+                 size="sm"
+                 className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0 shadow-lg"
+               >
+                 <Link href="/dashboard/settings">
+                   <Crown className="h-4 w-4 mr-1" />
+                   Go Pro
+                 </Link>
+               </Button>
+               <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                 <DialogTrigger asChild>
+                   <Button className="bg-white text-pink-600 hover:bg-slate-100 border-none">
+                     <Plus className="h-4 w-4 mr-2" /> New Group
+                   </Button>
+                 </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create a Shared Group</DialogTitle>
@@ -116,6 +128,7 @@ export default function GroupsPage() {
                 </form>
               </DialogContent>
             </Dialog>
+             </div>
           </div>
         </div>
       </div>

@@ -524,8 +524,7 @@ export default function SettingsPage() {
                 <Dialog open={proDialogOpen} onOpenChange={setProDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
-                      <Crown className="mr-2 h-4 w-4" />
-                      Upgrade to Pro
+                      Manage Subscription
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">

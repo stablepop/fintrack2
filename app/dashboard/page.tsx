@@ -3,20 +3,32 @@
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { GoalsSection } from "@/components/dashboard/goals-section"; 
-import { getCurrentUser } from "@/lib/auth/session";
 import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProUpgrade } from "@/hooks/useProUpgrade";
 import { useEffect, useState } from "react";
 
+interface User {
+  userId: string;
+  fullName: string;
+  email: string;
+}
+
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const { handleProUpgrade, paymentLoading } = useProUpgrade();
 
   useEffect(() => {
     const fetchUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
     };
     fetchUser();
   }, []);

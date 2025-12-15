@@ -5,6 +5,13 @@ import { useRouter, usePathname } from "next/navigation";
 import * as faceapi from "face-api.js";
 import { toast } from "sonner"; // Assuming you are using Sonner as per your imports
 
+// Razorpay global declaration
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +24,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 
 import {
   User,
@@ -28,7 +44,8 @@ import {
   Camera,
   Mail,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Crown
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -78,6 +95,10 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteStep, setDeleteStep] = useState<"idle" | "acknowledged">("idle");
   const [deleting, setDeleting] = useState(false);
+
+  // Pro subscription
+  const [proDialogOpen, setProDialogOpen] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -305,6 +326,71 @@ export default function SettingsPage() {
     }
   };
 
+  // Handle Pro subscription payment
+  const handleProPayment = async () => {
+    setPaymentLoading(true);
+    try {
+      // Amount for Pro subscription: ₹499 = 49900 paise
+      const amount = 49900;
+
+      // Create Razorpay order
+      const res = await fetch('/api/subscription/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, currency: 'INR' }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to create payment order');
+      }
+
+      const { orderId, key } = await res.json();
+
+      // Load Razorpay script if not loaded
+      if (!window.Razorpay) {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+      }
+
+      // Initialize Razorpay checkout
+      const options = {
+        key: key,
+        amount: amount,
+        currency: 'INR',
+        name: 'FinTrack Pro',
+        description: 'Upgrade to Pro features',
+        order_id: orderId,
+        handler: function (response: any) {
+          // Payment successful
+          toast.success('Payment successful! Welcome to Pro.');
+          setProDialogOpen(false);
+          // Here you would typically update user's subscription status in DB
+          // For now, just show success
+        },
+        prefill: {
+          email: profile.email,
+          name: profile.fullName,
+        },
+        theme: {
+          color: '#059669', // emerald-600
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   if (loading) return <div className="p-6">Loading settings…</div>;
 
   /* ------------------------ UI ------------------------ */
@@ -418,6 +504,69 @@ export default function SettingsPage() {
                 {passwordSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Change Password
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                Pro Features
+              </CardTitle>
+              <CardDescription>Unlock advanced features</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Upgrade to Pro for unlimited categories, advanced analytics, priority support, and more.
+              </p>
+              <Dialog open={proDialogOpen} onOpenChange={setProDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
+                    <Crown className="mr-2 h-4 w-4" />
+                    Go Pro
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Crown className="h-5 w-5 text-yellow-500" />
+                      Upgrade to FinTrack Pro
+                    </DialogTitle>
+                    <DialogDescription>
+                      Unlock powerful features to take your expense tracking to the next level.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-semibold">Pro Features Include:</h4>
+                      <ul className="space-y-1 text-sm">
+                        <li>• Unlimited expense categories</li>
+                        <li>• Advanced analytics and reports</li>
+                        <li>• Priority customer support</li>
+                        <li>• Export data in multiple formats</li>
+                        <li>• Custom budget alerts</li>
+                        <li>• AI-powered insights</li>
+                      </ul>
+                    </div>
+                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-lg">₹499</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">One-time payment</p>
+                        </div>
+                        <Button
+                          onClick={handleProPayment}
+                          disabled={paymentLoading}
+                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+                        >
+                          {paymentLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {paymentLoading ? "Processing..." : "Upgrade Now"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
